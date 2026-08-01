@@ -1,6 +1,8 @@
 /*
 ===============================================================================
-Purpose:
+DDL Scripts: Create Bronze Tables
+===============================================================================
+Scripts Purpose:
 This script creates the Bronze layer tables for the Data Warehouse.
 It first checks whether each table already exists, drops it if present,
 and then recreates it with the required schema to store raw data loaded
