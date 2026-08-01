@@ -1,6 +1,8 @@
 /*
 ===============================================================================
-Purpose:
+Store Procedure: Load Bronze Layer(Source->Bronze)
+===============================================================================
+Script Purpose:
 This stored procedure performs a full refresh of the Bronze layer by loading
 raw CRM and ERP data from CSV files into SQL Server tables. It logs the loading
 progress, measures execution time for each table and the overall batch, and
