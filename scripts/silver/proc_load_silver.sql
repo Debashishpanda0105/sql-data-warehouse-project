@@ -23,12 +23,16 @@ BEGIN
 		PRINT'====================================================================';
 
 		--Loading crm_cust_info
-		--check for unwanted Spaces
+		-- Check for unwanted spaces and load latest customer records
 		SET @start_time = GETDATE();
-		PRINT'>>TRUNCATING TABLE: silver.crm_cust_info';
+
+		PRINT '>>TRUNCATING TABLE: silver.crm_cust_info';
 		TRUNCATE TABLE silver.crm_cust_info;
-		PRINT'>>Inserting Data INTO : silver.crm_cust_info';
-		INSERT INTO silver.crm_cust_info(
+
+		PRINT '>>Inserting Data INTO: silver.crm_cust_info';
+
+		INSERT INTO silver.crm_cust_info
+		(
 			cst_id,
 			cst_key,
 			cst_firstname,
@@ -40,28 +44,46 @@ BEGIN
 		SELECT
 			cst_id,
 			cst_key,
-			TRIM(cst_firstname) AS st_firstname,
+			TRIM(cst_firstname) AS cst_firstname,
 			TRIM(cst_lastname) AS cst_lastname,
-			CASE WHEN UPPER(TRIM(cst_gndr)) = 'F' THEN 'Female'
-				 WHEN UPPER(TRIM(cst_gndr)) = 'M' THEN 'Male'
-				 ELSE 'n/a'
-			END cst_gndr,-- normalise gender values to redable formate
 
-			CASE WHEN UPPER(TRIM(cst_material_status)) = 'S' THEN 'Single'
-				 WHEN UPPER(TRIM(cst_material_status)) = 'M' THEN 'Married'
-				 ELSE 'n/a'
-			END cst_material_status,-- normalise marital status values to redable formate
+			-- Normalize marital status
+			CASE
+				WHEN UPPER(TRIM(cst_material_status)) = 'S' THEN 'Single'
+				WHEN UPPER(TRIM(cst_material_status)) = 'M' THEN 'Married'
+				ELSE 'n/a'
+			END AS cst_material_status,
+
+			-- Normalize gender
+			CASE
+				WHEN UPPER(TRIM(cst_gndr)) = 'F' THEN 'Female'
+				WHEN UPPER(TRIM(cst_gndr)) = 'M' THEN 'Male'
+				ELSE 'n/a'
+			END AS cst_gndr,
+
 			cst_create_date
-		FROM(
-			SELECT 
+
+		FROM
+		(
+			SELECT
 				*,
-				ROW_NUMBER () OVER (PARTITION BY cst_id ORDER BY cst_create_date DESC) as flag_last
+				ROW_NUMBER() OVER
+				(
+					PARTITION BY cst_id
+					ORDER BY cst_create_date DESC
+				) AS flag_last
 			FROM bronze.crm_cust_info
 			WHERE cst_id IS NOT NULL
-		)t WHERE flag_last = 1 --select the most recent record per customer
-		SET @End_time = GETDATE();
-		PRINT'>>LOAD DURATION:'+CAST(DATEDIFF(SECOND,@start_time,@end_time)AS VARCHAR) +'seconds';
-		PRINT'>--------------------------'	;
+		) t
+		WHERE flag_last = 1;   -- Select the latest record for each customer
+
+		SET @end_time = GETDATE();
+
+		PRINT '>>LOAD DURATION: ' +
+			  CAST(DATEDIFF(SECOND, @start_time, @end_time) AS VARCHAR) +
+			  ' seconds';
+
+		PRINT '>--------------------------';
 		--------------------------------------------------------------------------------
 		--for crm_cust_info
 		--clean and load crm_prd_info
