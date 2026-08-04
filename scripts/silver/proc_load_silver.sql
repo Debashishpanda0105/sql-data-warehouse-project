@@ -19,7 +19,7 @@ BEGIN
 		PRINT'====================================================================';
 
 		PRINT'====================================================================';
-		PRINT'LOADING DRM TABLE';
+		PRINT'LOADING CRM TABLE';
 		PRINT'====================================================================';
 
 		--Loading crm_cust_info
@@ -261,4 +261,7 @@ END
 
 
 --TO LOAD STOIRE PROCEDURE
-EXEC bronze.load_bronze;
+EXEC silver.load_silver;
+
+--TO CHECK THE RECORD
+SELECT * FROM silver.crm_cust_info;
